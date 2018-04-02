@@ -18,7 +18,6 @@ Pacman agents (in searchAgents.py).
 """
 
 import util
-
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -81,23 +80,88 @@ def depthFirstSearch(problem):
 
     To get started, you might want to try some of these simple commands to
     understand the search problem that is being passed in:
+"""
 
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
-    """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = util.Node()
+    root.state = problem.getStartState()
+    fringe = util.Stack()
+    fringe.push(root)
+
+    # keep track of already explored nodes
+    closed_set = set()
+
+    while not fringe.isEmpty():
+        node = fringe.pop()
+        if problem.isGoalState(node.state):
+            return node.path
+
+        if node.state not in closed_set:
+            closed_set.add(node.state)
+            successors = problem.getSuccessors(node.state)
+            for successor in successors:
+                if successor[0] not in closed_set:
+                    element = util.Node()
+                    element.state = successor[0]
+                    element.dir = successor[1]
+                    element.path = node.path + [successor[1]]
+                    fringe.push(element)
+    return []
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    root = util.Node()
+    root.state = problem.getStartState()
+    fringe = util.Queue()
+    fringe.push(root)
+
+    # keep track of already explored nodes
+    closed_set = set()
+
+    while not fringe.isEmpty():
+        node = fringe.pop()
+        if problem.isGoalState(node.state):
+            return node.path
+
+        if node.state not in closed_set:
+            closed_set.add(node.state)
+            successors = problem.getSuccessors(node.state)
+            for successor in successors:
+                if successor[0] not in closed_set:
+                    element = util.Node()
+                    element.state = successor[0]
+                    element.dir = successor[1]
+                    element.path = node.path + [successor[1]]
+                    fringe.push(element)
+    return []
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    root = util.Node()
+    root.state = problem.getStartState()
+    root.priority = 1
+    fringe = util.PriorityQueue()
+    fringe.push(root,1)
+    closed_set = set()
+
+    while not fringe.isEmpty():
+        node = fringe.pop()
+        if node.state not in closed_set:
+            closed_set.add(node.state)
+            if problem.isGoalState(node.state):
+                return node.path
+            successors = problem.getSuccessors(node.state)
+            for successor in successors:
+                if successor[0] not in closed_set:
+                    element = util.Node()
+                    element.state = successor[0]
+                    element.dir = successor[1]
+                    element.path = node.path + [successor[1]]
+                    element.priority = node.priority + successor[2]
+                    fringe.push(element, element.priority)
+
+    print(closed_set)
+    return []
 
 def nullHeuristic(state, problem=None):
     """
@@ -106,11 +170,41 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+def manhattanHeuristic(state, problem=None):
+    """
+    A heuristic function estimates the cost from the current state to the nearest
+    goal in the provided SearchProblem.  This heuristic is trivial.
+    """
+    return 0
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
 
+    root = util.Node()
+    root.state = problem.getStartState()
+    root.cost = 0
+    fringe = util.PriorityQueue()
+    fringe.push(root, 0)
+
+    closed_set = set()
+
+    while not fringe.isEmpty():
+        node = fringe.pop()
+        if problem.isGoalState(node.state):
+            return node.path
+
+        if node.state not in closed_set:
+            closed_set.add(node.state)
+            successors = problem.getSuccessors(node.state)
+            for successor in successors:
+                if successor[0] not in closed_set:
+                    heurval = heuristic(successor[0], problem)
+                    element = util.Node()
+                    element.state = successor[0]
+                    element.dir = successor[1]
+                    element.path = node.path + [successor[1]]
+                    element.priority = node.priority + successor[2]
+                    fringe.push(element, element.priority + heurval)
 
 # Abbreviations
 bfs = breadthFirstSearch
